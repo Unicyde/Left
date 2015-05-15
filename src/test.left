@@ -1,0 +1,6 @@
+r = input: "Enter radius: "
+
+print: "S =", pi * r ^ 2, "\no =", 2 * pi * r
+
+3.times { print: "Hello ", nobreak }
+print: "world " * 5 - 1 + "!"
