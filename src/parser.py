@@ -3,13 +3,15 @@ from utils import *
 vars = {}
 
 def parseExpression(nodes):
+	print(nodes)
+
 	if len(nodes) == 0:
-		return ""
+		return None
 	elif (len(nodes) == 1 and not contains(["+","-","*","/","^"], nodes)) or type(nodes) is list:
 		if type(nodes) is list:
 			return [parse(x) for x in nodes]
 		else:
-			if type(nodes[list(nodes.keys())[0]]) is not str and "list" not in nodes:
+			if type(nodes[list(nodes.keys())[0]]) is not str and not contains(["list","tuple"], nodes):
 				raise Exception
 			k = nodes
 			if "id" in k:
@@ -21,6 +23,8 @@ def parseExpression(nodes):
 				k = k[list(k.keys())[0]]
 			if "list" in k:
 				k = [parse(x) for x in k["list"]]
+			elif "tuple" in k:
+				k = tuple(parse(x) for x in k["tuple"])
 			return k
 
 	operator = list(nodes.keys())[0]
@@ -28,9 +32,14 @@ def parseExpression(nodes):
 	right = nodes[operator][1]
 
 	# print(left)
-	# print(operator)
 	# print(right)
+	# print(operator)
 	# print()
+
+	if type(left) is list and len(left) == 1:
+		left = left[0]
+	if type(right) is list and len(right) == 1:
+		right = right[0]
 
 	if "id" in left:
 		if left["id"] not in vars:
@@ -46,6 +55,7 @@ def parseExpression(nodes):
 	if not contains(["number","string"], left):
 		left = parse(left)
 		left = genType(left)
+
 	if not contains(["number","string"], right):
 		right = parse(right)
 		right = genType(right)
@@ -113,6 +123,17 @@ def parseExpression(nodes):
 			return {"list": [x for x in left if x == right]}
 		else:
 			raise ArithmeticError(fail + "Can't apply `%s` to `list` and `%s`!" % (operator, list(right.keys())[0]) + endc)
+
+	elif "tuple" in left and "tuple" in right:
+		left = left["tuple"]
+		right = right["tuple"]
+		if operator in ["+","-","*","/","^"]:
+			return {"tuple": [parse({operator: [x, y]}) for x, y in zip(left, right)]}
+
+	elif "tuple" in left and "number" in right:
+		left = left["tuple"]
+		if operator in ["+","-","*","/","^"]:
+			return {"tuple": [parse({operator: [x, right]}) for x in left]}
 
 	elif "number" in left:
 		left = left["number"]

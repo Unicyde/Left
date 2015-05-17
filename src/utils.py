@@ -39,13 +39,16 @@ idChars = list(string.ascii_lowercase) + list(string.ascii_uppercase) + list(map
 opers = ["+","-","*","/","^","=","!","~","?"]
 
 def contains(a1, a2):
-	return len([x for x in a1 if x in a2]) > 0
+	if type(a1) is set:
+		return len([x for x in a1 if x in [list(y.keys())[0] for y in a2]]) > 0
+	else:
+		return len([x for x in a1 if x in a2]) > 0
 
 def genType(value):
 	if type(value) is dict:
 		return value
-	elif type(value) is list:
-		return {"list": [genType(x) for x in value]}
+	elif type(value) is list or type(value) is tuple:
+		return {type(value).__name__: [genType(x) for x in value]}
 	elif type(value) is int or type(value) is float:
 		return {"number": str(value)}
 	else:
@@ -59,8 +62,11 @@ def genType(value):
 
 def toStr(node):
 	if type(node) is not dict:
-		return node
+		return str(node)
+
 	if "list" in node:
 		return "[" + ", ".join([toStr(x) for x in node["list"]]) + "]"
+	elif "tuple" in node:
+		return "(" + ", ".join([toStr(x) for x in node["tuple"]]) + ")"
 	else:
-		return list(node.values())[0]
+		return str(list(node.values())[0])
